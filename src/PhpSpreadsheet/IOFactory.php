@@ -110,9 +110,9 @@ abstract class IOFactory
      *
      * @return Reader\IReader
      */
-    public static function createReaderForFile($filename)
+    public static function createReaderForFile($filename,$checkFileExist=true)
     {
-        File::assertFile($filename);
+        if ($checkFileExist) File::assertFile($filename);
 
         // First, lucky guess by inspecting file extension
         $guessedReader = self::getReaderTypeFromExtension($filename);
@@ -120,7 +120,7 @@ abstract class IOFactory
             $reader = self::createReader($guessedReader);
 
             // Let's see if we are lucky
-            if ($reader->canRead($filename)) {
+            if (isset($reader) && (!$checkFileExist || $reader->canRead($filename))) {
                 return $reader;
             }
         }
@@ -131,7 +131,7 @@ abstract class IOFactory
             //    Ignore our original guess, we know that won't work
             if ($type !== $guessedReader) {
                 $reader = self::createReader($type);
-                if ($reader->canRead($filename)) {
+                if (!$checkFileExist ||  $reader->canRead($filename)) {
                     return $reader;
                 }
             }
